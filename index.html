@@ -1355,18 +1355,127 @@
   .back-cover .bc-gse { background: #3a6b1f; border-radius: 4px; padding: 10px 14px; font-size: 11px; margin-top: 16px; }
   .back-cover .bc-isbn { font-size: 11px; margin-top: 10px; }
   @media (max-width: 640px) { .back-cover .bc-cols { grid-template-columns: 1fr; } }
+
+  /* Edit toolbar */
+  #edit-toolbar { position: fixed; right: 14px; bottom: 14px; z-index: 999; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-family: 'Quicksand', sans-serif; }
+  #et-toggle { border: none; border-radius: 999px; padding: 12px 18px; background: linear-gradient(135deg, var(--tn-green-dark), var(--tn-green)); color: #fff; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); cursor: pointer; }
+  #edit-toolbar.collapsed .et-panel { display: none; }
+  .et-panel { background: #fff; border: 2px solid var(--tn-green); border-radius: 16px; padding: 12px; width: 220px; max-height: 76vh; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
+  .et-panel-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--tn-green-darker); margin-bottom: 10px; }
+  .et-x { border: none; background: none; font-size: 18px; line-height: 1; cursor: pointer; color: #888; }
+  .et-section { margin-bottom: 10px; }
+  .et-section:last-child { margin-bottom: 0; }
+  .et-label { font-size: 11px; font-weight: 700; color: var(--tn-green-darker); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.4px; }
+  .et-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .et-btn { border: none; border-radius: 8px; padding: 7px 10px; font-weight: 700; font-size: 13px; cursor: pointer; background: var(--tn-paper); color: var(--tn-ink); }
+  .et-btn:hover:not(:disabled) { background: #e3ecd6; }
+  .et-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .et-btn.active { background: var(--tn-green); color: #fff; }
+  .et-btn-wide { flex: 1 1 100%; }
+  .et-btn-danger { background: #f6d5d5; color: #8a2222; }
+  .et-btn-danger:hover:not(:disabled) { background: #f0b6b6; }
+  .et-swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #ccc; cursor: pointer; padding: 0; }
+  .et-swatch:disabled { opacity: 0.45; cursor: not-allowed; }
+  .et-swatch.sel-yellow { background: #ffe17a; }
+  .et-swatch.sel-green { background: #b7f0a0; }
+  .et-swatch.sel-pink { background: #ffc2e0; }
+  .et-swatch.sel-blue { background: #aee0ff; }
+  .et-swatch.fc-red { background: #e63946; }
+  .et-swatch.fc-blue { background: #2d7dd2; }
+  .et-swatch.fc-green { background: #2e7d32; }
+  .et-swatch.fc-orange { background: #e67e22; }
+  .et-swatch.fc-purple { background: #8e44ad; }
+  .et-swatch.fc-black { background: #000000; }
+  .et-status { font-size: 11px; color: #888; min-height: 14px; margin-top: 4px; }
+  .et-shortcuts-hint { font-size: 10px; color: #999; line-height: 1.5; }
+  .editable-content[contenteditable="true"] { cursor: text; border-radius: 8px; }
+  .editable-content[contenteditable="true"]:hover,
+  .editable-content[contenteditable="true"]:focus-within { outline: 2px dashed var(--tn-green); outline-offset: 4px; }
+  .user-note { display: block; background: #fff9db; border: 2px dashed #e0c23a; border-radius: 10px; padding: 8px 10px; margin: 8px 0; font-size: 14px; color: #6b5a10; }
+  .user-note:before { content: "Note: "; font-weight: 700; }
+  .page-reset-btn { display: none; width: max-content; margin: 10px 0 4px auto; border: none; border-radius: 999px; padding: 4px 10px; font-family: 'Quicksand', sans-serif; font-size: 11px; font-weight: 700; background: #f6d5d5; color: #8a2222; cursor: pointer; }
+  .page-reset-btn.show { display: block; }
+  .page-reset-btn:hover { background: #f0b6b6; }
 </style>
 </head>
 <body>
 <nav>
   <div class="nav-row">
-    <input id="jump" type="number" min="1" max="172" placeholder="Nhay toi trang... (1-172)" onchange="document.getElementById('p-'+this.value).scrollIntoView()">
-    <input id="search" type="text" placeholder="Tim kiem noi dung...">
+    <input id="jump" type="number" min="1" max="172" placeholder="Jump to page... (1-172)" onchange="document.getElementById('p-'+this.value).scrollIntoView()">
+    <input id="search" type="text" placeholder="Search content...">
     <button id="search-prev" type="button" disabled>&uarr;</button>
     <button id="search-next" type="button" disabled>&darr;</button>
   </div>
   <div id="search-status"></div>
 </nav>
+
+<div id="edit-toolbar" class="collapsed">
+  <button id="et-toggle" type="button">Edit tools</button>
+  <div class="et-panel">
+    <div class="et-panel-head">
+      <span>Edit Tools</span>
+      <button id="et-close" type="button" class="et-x">&times;</button>
+    </div>
+    <div class="et-section">
+      <button id="et-editmode" type="button" class="et-btn et-btn-wide" title="Ctrl/Cmd+Shift+E">Enable edit mode</button>
+    </div>
+    <div class="et-section">
+      <div class="et-label">Highlight</div>
+      <div class="et-row">
+        <button type="button" class="et-swatch et-hl-swatch sel-yellow" data-color="#ffe17a" title="Yellow (Ctrl/Cmd+Shift+H)"></button>
+        <button type="button" class="et-swatch et-hl-swatch sel-green" data-color="#b7f0a0" title="Green"></button>
+        <button type="button" class="et-swatch et-hl-swatch sel-pink" data-color="#ffc2e0" title="Pink"></button>
+        <button type="button" class="et-swatch et-hl-swatch sel-blue" data-color="#aee0ff" title="Blue"></button>
+        <button id="et-unhl" type="button" class="et-btn" title="Remove highlight (Ctrl/Cmd+Shift+U)">Clear</button>
+      </div>
+    </div>
+    <div class="et-section">
+      <div class="et-label">Text color</div>
+      <div class="et-row">
+        <button type="button" class="et-swatch et-tc-swatch fc-red" data-color="#e63946" title="Red"></button>
+        <button type="button" class="et-swatch et-tc-swatch fc-blue" data-color="#2d7dd2" title="Blue"></button>
+        <button type="button" class="et-swatch et-tc-swatch fc-green" data-color="#2e7d32" title="Green"></button>
+        <button type="button" class="et-swatch et-tc-swatch fc-orange" data-color="#e67e22" title="Orange"></button>
+        <button type="button" class="et-swatch et-tc-swatch fc-purple" data-color="#8e44ad" title="Purple"></button>
+        <button type="button" class="et-swatch et-tc-swatch fc-black" data-color="#000000" title="Black"></button>
+        <button id="et-tc-reset" type="button" class="et-btn" title="Reset text color">Clear</button>
+      </div>
+    </div>
+    <div class="et-section">
+      <div class="et-label">Format</div>
+      <div class="et-row">
+        <button id="et-bold" type="button" class="et-btn" title="Ctrl/Cmd+B"><b>B</b> Bold</button>
+        <button id="et-italic" type="button" class="et-btn" title="Ctrl/Cmd+I"><i>I</i> Italic</button>
+        <button id="et-eraser" type="button" class="et-btn et-btn-wide" title="Remove all formatting from the selection (Ctrl/Cmd+Shift+X)">Eraser</button>
+      </div>
+    </div>
+    <div class="et-section">
+      <div class="et-label">Content</div>
+      <div class="et-row">
+        <button id="et-note" type="button" class="et-btn et-btn-wide" title="Ctrl/Cmd+Shift+M">+ Note</button>
+        <button id="et-delete" type="button" class="et-btn et-btn-wide" title="Or just press Backspace/Delete while text is selected">Delete selection</button>
+      </div>
+    </div>
+    <div class="et-section">
+      <div class="et-row">
+        <button id="et-undo" type="button" class="et-btn" title="Ctrl/Cmd+Z">Undo</button>
+        <button id="et-redo" type="button" class="et-btn" title="Ctrl/Cmd+Shift+Z">Redo</button>
+      </div>
+    </div>
+    <div class="et-section">
+      <div class="et-label">Shortcuts</div>
+      <div class="et-shortcuts-hint">
+        Edit mode ^&#8679;E &middot; Highlight ^&#8679;H &middot; Unhighlight ^&#8679;U &middot; Eraser ^&#8679;X &middot; Note ^&#8679;M<br>
+        Bold ^B &middot; Italic ^I &middot; Undo ^Z &middot; Redo ^&#8679;Z &middot; Delete selection: Backspace
+      </div>
+    </div>
+    <div class="et-section">
+      <button id="et-reset" type="button" class="et-btn et-btn-wide et-btn-danger">Reset all</button>
+    </div>
+    <div id="et-status" class="et-status"></div>
+  </div>
+</div>
+
 <h1>Top Notch 2 (Third Edition) &mdash; OCR text</h1>
 <section class="page" id="p-1">
 <h2>Trang 1</h2>
@@ -10834,8 +10943,8 @@ I have to find a way to make you mine.</p>
 
   function updateStatus() {
     status.textContent = matches.length
-      ? (currentIndex + 1) + ' / ' + matches.length + ' ket qua'
-      : 'Khong tim thay';
+      ? (currentIndex + 1) + ' / ' + matches.length + ' results'
+      : 'No results found';
   }
 
   function goToCurrent() {
@@ -10875,6 +10984,320 @@ I have to find a way to make you mine.</p>
   nextBtn.addEventListener('click', next);
   prevBtn.addEventListener('click', prev);
 })();
+</script>
+<script type="module">
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+
+  function wrapPageContent(page) {
+    if (page.querySelector(':scope > .editable-content')) return;
+    var img = page.querySelector(':scope > img');
+    var after = img || page.querySelector(':scope > h2');
+    var wrapper = document.createElement('div');
+    wrapper.className = 'editable-content';
+    var node = after ? after.nextSibling : page.firstChild;
+    var toMove = [];
+    while (node) { toMove.push(node); node = node.nextSibling; }
+    toMove.forEach(function (n) { wrapper.appendChild(n); });
+    page.appendChild(wrapper);
+  }
+  pages.forEach(wrapPageContent);
+
+  function storageKey(pageId) { return 'tn2-edit-' + pageId; }
+
+  function applyHtml(pageId, html) {
+    var page = document.getElementById(pageId);
+    var wrapper = page && page.querySelector(':scope > .editable-content');
+    if (wrapper) wrapper.innerHTML = html;
+  }
+
+  // Instant local restore (works even with no network / no Firebase configured).
+  pages.forEach(function (page) {
+    var saved;
+    try { saved = localStorage.getItem(storageKey(page.id)); } catch (e) { saved = null; }
+    if (saved !== null) applyHtml(page.id, saved);
+  });
+
+  var toolbar = document.getElementById('edit-toolbar');
+  var statusEl = document.getElementById('et-status');
+
+  function flashStatus(msg) {
+    statusEl.textContent = msg;
+    clearTimeout(statusEl._t);
+    statusEl._t = setTimeout(function () { statusEl.textContent = ''; }, 2500);
+  }
+
+  function saveLocal(pageId, html) {
+    try { localStorage.setItem(storageKey(pageId), html); return true; }
+    catch (e) { return false; }
+  }
+
+  // --- Optional Firebase/Firestore cloud sync -------------------------------
+  // Loaded dynamically so a missing/untracked firebase-config.js never breaks
+  // the rest of the toolbar (highlight/bold/note/delete/undo keep working on
+  // localStorage alone).
+  var fsApi = null, db = null, auth = null, cloudReady = false;
+
+  function saveCloud(pageId, html) {
+    if (!db || !fsApi) return;
+    fsApi.setDoc(fsApi.doc(db, 'edits', pageId), { html: html, updatedAt: fsApi.serverTimestamp() })
+      .catch(function (e) { console.warn('Cloud save failed for', pageId, e); });
+  }
+
+  function pullCloud() {
+    if (!db || !fsApi) return;
+    fsApi.getDocs(fsApi.collection(db, 'edits')).then(function (snapshot) {
+      snapshot.forEach(function (docSnap) {
+        var data = docSnap.data();
+        if (data && typeof data.html === 'string') {
+          applyHtml(docSnap.id, data.html);
+          saveLocal(docSnap.id, data.html);
+        }
+      });
+      cloudReady = true;
+      flashStatus('Cloud sync ready');
+    }).catch(function (e) {
+      console.warn('Cloud sync unavailable, using local storage only.', e);
+      flashStatus('Offline (local storage only)');
+    });
+  }
+
+  (async function initFirebase() {
+    try {
+      var cfgMod = await import('./firebase-config.js');
+      var appMod = await import('https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js');
+      fsApi = await import('https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js');
+      var authMod = await import('https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js');
+      var app = appMod.initializeApp(cfgMod.firebaseConfig);
+      db = fsApi.getFirestore(app);
+      auth = authMod.getAuth(app);
+      authMod.onAuthStateChanged(auth, function (user) { if (user) pullCloud(); });
+      authMod.signInAnonymously(auth).catch(function (e) {
+        console.warn('Anonymous sign-in failed, using local storage only.', e);
+        flashStatus('Offline (local storage only)');
+      });
+    } catch (e) {
+      console.warn('Firebase not configured (missing firebase-config.js?), using local storage only.', e);
+    }
+  })();
+  // ---------------------------------------------------------------------------
+
+  function saveContent(wrapper) {
+    var page = wrapper.closest('.page');
+    if (!page) return;
+    var ok = saveLocal(page.id, wrapper.innerHTML);
+    saveCloud(page.id, wrapper.innerHTML);
+    flashStatus(ok ? (cloudReady ? 'Saved (synced)' : 'Saved locally') : 'Could not save (storage full)');
+  }
+
+  var saveTimer;
+  document.addEventListener('input', function (e) {
+    var wrapper = e.target.closest && e.target.closest('.editable-content');
+    if (!wrapper) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { saveContent(wrapper); }, 400);
+  });
+
+  var toggleBtn = document.getElementById('et-toggle');
+  var closeBtn = document.getElementById('et-close');
+  var editModeBtn = document.getElementById('et-editmode');
+  var editMode = false;
+
+  function setEditMode(on) {
+    editMode = on;
+    pages.forEach(function (page) {
+      var wrapper = page.querySelector(':scope > .editable-content');
+      if (wrapper) wrapper.setAttribute('contenteditable', on ? 'true' : 'false');
+    });
+    editModeBtn.textContent = on ? 'Disable edit mode' : 'Enable edit mode';
+    editModeBtn.classList.toggle('active', on);
+    Array.prototype.slice.call(toolbar.querySelectorAll('.et-needs-edit')).forEach(function (b) {
+      b.disabled = !on;
+    });
+    Array.prototype.slice.call(document.querySelectorAll('.page-reset-btn')).forEach(function (b) {
+      b.classList.toggle('show', on);
+    });
+    try { localStorage.setItem('tn2-editmode', on ? '1' : '0'); } catch (e) {}
+  }
+
+  function resetPage(pageId) {
+    try { localStorage.removeItem(storageKey(pageId)); } catch (e) {}
+    var finish = function () { location.reload(); };
+    if (db && fsApi) {
+      fsApi.deleteDoc(fsApi.doc(db, 'edits', pageId)).catch(function (e) {
+        console.warn('Cloud reset failed for', pageId, e);
+      }).then(finish);
+    } else {
+      finish();
+    }
+  }
+
+  pages.forEach(function (page) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'page-reset-btn';
+    btn.textContent = 'Reset page';
+    btn.title = 'Delete saved edits for this page only and reload';
+    btn.addEventListener('click', function () {
+      if (!confirm('Reset this page only? Saved edits (local and cloud) for this page will be deleted.')) return;
+      resetPage(page.id);
+    });
+    var wrapper = page.querySelector(':scope > .editable-content');
+    if (wrapper) { page.insertBefore(btn, wrapper); } else { page.appendChild(btn); }
+  });
+
+  toggleBtn.addEventListener('click', function () { toolbar.classList.toggle('collapsed'); });
+  closeBtn.addEventListener('click', function () { toolbar.classList.add('collapsed'); });
+  editModeBtn.addEventListener('click', function () { setEditMode(!editMode); });
+
+  function preserveSelection(btn) {
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  }
+
+  function withinEditable() {
+    var sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+    var node = sel.getRangeAt(0).commonAncestorContainer;
+    var el = node.nodeType === 1 ? node : node.parentElement;
+    return !!(el && el.closest && el.closest('.editable-content'));
+  }
+
+  function runCommand(cmd, value) {
+    if (!editMode) { flashStatus('Enable edit mode first'); return; }
+    if (!withinEditable()) { flashStatus('Select text inside a page first'); return; }
+    try { document.execCommand(cmd, false, value); } catch (e) {}
+  }
+
+  Array.prototype.slice.call(toolbar.querySelectorAll('.et-hl-swatch')).forEach(function (sw) {
+    preserveSelection(sw);
+    sw.classList.add('et-needs-edit');
+    sw.addEventListener('click', function () {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed) { flashStatus('Select text to highlight'); return; }
+      runCommand('hiliteColor', sw.getAttribute('data-color'));
+    });
+  });
+
+  var unhlBtn = document.getElementById('et-unhl');
+  preserveSelection(unhlBtn); unhlBtn.classList.add('et-needs-edit');
+  unhlBtn.addEventListener('click', function () { runCommand('hiliteColor', 'transparent'); });
+
+  Array.prototype.slice.call(toolbar.querySelectorAll('.et-tc-swatch')).forEach(function (sw) {
+    preserveSelection(sw);
+    sw.classList.add('et-needs-edit');
+    sw.addEventListener('click', function () {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed) { flashStatus('Select text to color'); return; }
+      runCommand('foreColor', sw.getAttribute('data-color'));
+    });
+  });
+
+  var tcResetBtn = document.getElementById('et-tc-reset');
+  preserveSelection(tcResetBtn); tcResetBtn.classList.add('et-needs-edit');
+  tcResetBtn.addEventListener('click', function () { runCommand('foreColor', '#3a3a3a'); });
+
+  var boldBtn = document.getElementById('et-bold');
+  preserveSelection(boldBtn); boldBtn.classList.add('et-needs-edit');
+  boldBtn.addEventListener('click', function () { runCommand('bold'); });
+
+  var italicBtn = document.getElementById('et-italic');
+  preserveSelection(italicBtn); italicBtn.classList.add('et-needs-edit');
+  italicBtn.addEventListener('click', function () { runCommand('italic'); });
+
+  var eraserBtn = document.getElementById('et-eraser');
+  preserveSelection(eraserBtn); eraserBtn.classList.add('et-needs-edit');
+  eraserBtn.addEventListener('click', function () {
+    var sel = window.getSelection();
+    if (!sel || sel.isCollapsed) { flashStatus('Select text to erase formatting from'); return; }
+    runCommand('removeFormat');
+  });
+
+  var noteBtn = document.getElementById('et-note');
+  preserveSelection(noteBtn); noteBtn.classList.add('et-needs-edit');
+  noteBtn.addEventListener('click', function () {
+    if (!editMode) { flashStatus('Enable edit mode first'); return; }
+    if (!withinEditable()) { flashStatus('Place the cursor inside a page first'); return; }
+    try { document.execCommand('insertHTML', false, '<div class="user-note">New note...</div>'); } catch (e) {}
+  });
+
+  var deleteBtn = document.getElementById('et-delete');
+  preserveSelection(deleteBtn); deleteBtn.classList.add('et-needs-edit');
+  deleteBtn.addEventListener('click', function () {
+    var sel = window.getSelection();
+    if (!sel || sel.isCollapsed) { flashStatus('Select the part to delete first'); return; }
+    runCommand('delete');
+  });
+
+  var undoBtn = document.getElementById('et-undo');
+  preserveSelection(undoBtn); undoBtn.classList.add('et-needs-edit');
+  undoBtn.addEventListener('click', function () {
+    if (!editMode) { flashStatus('Enable edit mode first'); return; }
+    try { document.execCommand('undo'); } catch (e) {}
+  });
+
+  var redoBtn = document.getElementById('et-redo');
+  preserveSelection(redoBtn); redoBtn.classList.add('et-needs-edit');
+  redoBtn.addEventListener('click', function () {
+    if (!editMode) { flashStatus('Enable edit mode first'); return; }
+    try { document.execCommand('redo'); } catch (e) {}
+  });
+
+  document.getElementById('et-reset').addEventListener('click', function () {
+    if (!confirm('Delete all saved edits (local and cloud) and reload the original page?')) return;
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.indexOf('tn2-edit-') === 0) localStorage.removeItem(k);
+      });
+    } catch (e) {}
+    if (db && fsApi) {
+      fsApi.getDocs(fsApi.collection(db, 'edits')).then(function (snapshot) {
+        var deletes = [];
+        snapshot.forEach(function (d) { deletes.push(fsApi.deleteDoc(d.ref)); });
+        return Promise.all(deletes);
+      }).catch(function (e) { console.warn('Cloud reset failed', e); })
+        .then(function () { location.reload(); });
+    } else {
+      location.reload();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var mod = e.ctrlKey || e.metaKey;
+    if (!mod || !e.shiftKey) return;
+    var key = e.key.toLowerCase();
+    var sel;
+    switch (key) {
+      case 'e':
+        e.preventDefault();
+        setEditMode(!editMode);
+        break;
+      case 'h':
+        e.preventDefault();
+        sel = window.getSelection();
+        if (!sel || sel.isCollapsed) { flashStatus('Select text to highlight'); return; }
+        runCommand('hiliteColor', '#ffe17a');
+        break;
+      case 'u':
+        e.preventDefault();
+        runCommand('hiliteColor', 'transparent');
+        break;
+      case 'x':
+        e.preventDefault();
+        sel = window.getSelection();
+        if (!sel || sel.isCollapsed) { flashStatus('Select text to erase formatting from'); return; }
+        runCommand('removeFormat');
+        break;
+      case 'm':
+        e.preventDefault();
+        if (!editMode) { flashStatus('Enable edit mode first'); return; }
+        if (!withinEditable()) { flashStatus('Place the cursor inside a page first'); return; }
+        try { document.execCommand('insertHTML', false, '<div class="user-note">New note...</div>'); } catch (err) {}
+        break;
+    }
+  });
+
+  var initialEditMode = false;
+  try { initialEditMode = localStorage.getItem('tn2-editmode') === '1'; } catch (e) {}
+  setEditMode(initialEditMode);
 </script>
 </body>
 </html>

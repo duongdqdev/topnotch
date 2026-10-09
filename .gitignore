@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+firebase-config.js
+
+node_modules/
+.firebase/
+firebase-debug.log
+.DS_Store
